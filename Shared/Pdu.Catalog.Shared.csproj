@@ -16,7 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Oqtane.Shared"><HintPath>..\..\oqtane.framework\Oqtane.Server\bin\Debug\net6.0\Oqtane.Shared.dll</HintPath></Reference>
+    <ProjectReference Include="..\oqtane.framework\Oqtane.Shared\Oqtane.Shared.csproj" />
   </ItemGroup>
 
 </Project>
