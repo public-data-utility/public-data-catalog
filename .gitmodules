@@ -1,0 +1,5 @@
+[submodule "oqtane.framework"]
+	path = oqtane.framework
+	url = https://github.com/public-data-utility/oqtane.framework
+	branch = release/v3.1.4
+	ignore = dirty

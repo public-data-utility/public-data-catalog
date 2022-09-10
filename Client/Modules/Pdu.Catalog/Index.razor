@@ -1,0 +1,77 @@
+@using Pdu.Catalog.Services
+@using Pdu.Catalog.Models
+
+@namespace Pdu.Catalog
+@inherits ModuleBase
+@inject ICatalogService CatalogService
+@inject NavigationManager NavigationManager
+@inject IStringLocalizer<Index> Localizer
+
+@if (_Catalogs == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <ActionLink Action="Add" Security="SecurityAccessLevel.Edit" Text="Add Catalog" ResourceKey="Add" />
+    <br />
+    <br />
+    @if (@_Catalogs.Count != 0)
+    {
+        <Pager Items="@_Catalogs">
+            <Header>
+                <th style="width: 1px;">&nbsp;</th>
+                <th style="width: 1px;">&nbsp;</th>
+                <th>@Localizer["Name"]</th>
+            </Header>
+            <Row>
+                <td><ActionLink Action="Edit" Parameters="@($"id=" + context.CatalogId.ToString())" ResourceKey="Edit"  /></td>
+                <td><ActionDialog Header="Delete Catalog" Message="@("Are You Sure You Wish To Delete The " + context.Name + " Catalog?")" Action="Delete" Security="SecurityAccessLevel.Edit" Class="btn btn-danger" OnClick="@(async () => await Delete(context))" ResourceKey="Delete"  /></td>
+                <td>@context.Name</td>
+            </Row>
+        </Pager>
+    }
+    else
+    {
+        <p>@Localizer["Message.DisplayNone"]</p>
+    }
+}
+
+@code {
+    public override List<Resource> Resources => new List<Resource>()
+    {
+        new Resource { ResourceType = ResourceType.Stylesheet, Url = ModulePath() + "Module.css" },
+        new Resource { ResourceType = ResourceType.Script, Url = ModulePath() + "Module.js" }
+    };
+
+    List<Catalog> _Catalogs;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _Catalogs = await CatalogService.GetCatalogsAsync(ModuleState.ModuleId);
+        }
+        catch (Exception ex)
+        {
+            await logger.LogError(ex, "Error Loading Catalog {Error}", ex.Message);
+            AddModuleMessage(Localizer["Message.LoadError"], MessageType.Error);
+        }
+    }
+
+    private async Task Delete(Catalog Catalog)
+    {
+        try
+        {
+            await CatalogService.DeleteCatalogAsync(Catalog.CatalogId, ModuleState.ModuleId);
+            await logger.LogInformation("Catalog Deleted {Catalog}", Catalog);
+            _Catalogs = await CatalogService.GetCatalogsAsync(ModuleState.ModuleId);
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            await logger.LogError(ex, "Error Deleting Catalog {Catalog} {Error}", Catalog, ex.Message);
+            AddModuleMessage(Localizer["Message.DeleteError"], MessageType.Error);
+        }
+    }
+}
